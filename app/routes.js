@@ -1,12 +1,20 @@
-// grab the user model
+/*
+* created by : zulekha herlekar
+* date : 28/05/2017
+* description : All respective routs related with app
+**/
+// grab the models and respective libraries
 var User = require('../app/models/users');
 var Lesson = require('../app/models/lessons');
 var Quiz = require('../app/models/quizzes');
 var rawDocuments = require('../app/data/data.js');
 var async = require('async');
 
+//get lesson/quiz completed status for each user
 module.exports = function(app) {
   app.get('/status', function(req, res) {
+
+    //aggregate query to get lesson groupby each user
     var lessonQuery = [{
       $match: {
         $and: [{
@@ -33,6 +41,8 @@ module.exports = function(app) {
         }
       }
     }];
+    
+    //aggregate query to get quizzes groupby each user
 
     var quizQuery = [{
       $match: {
@@ -81,7 +91,7 @@ module.exports = function(app) {
       selectedSchema = req.query.model === 'lesson' ? Lesson : Quiz;
       query = req.query.model === 'lesson' ? lessonQuery : quizQuery;
 
-      //get all lessons group by each user
+      //get all lessons/quiz group by each user
       async.parallel({
         started: getStarted,
         notStarted: getNotStarted,
@@ -90,6 +100,7 @@ module.exports = function(app) {
         res.json(results);
       });
 
+      //get lesson/quiz which are started but not completed yet
       function getStarted(callback) {
         selectedSchema.aggregate(query, function(err, result) {
           if (err) {
@@ -105,6 +116,7 @@ module.exports = function(app) {
         })
       }
 
+      //get lesson/quiz which are completed before today
       function getCompleted(callback) {
         query[0] = {
           $match: {
@@ -126,7 +138,8 @@ module.exports = function(app) {
           }
         })
       }
-
+      
+      //get lesson/quiz which are not started as of today
       function getNotStarted(callback) {
         query[0] = {
           $match: {

@@ -1,3 +1,8 @@
+/*
+* created by : zulekha herlekar
+* date : 28/05/2017
+* description : Lesson schema
+*/
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
