@@ -1,5 +1,5 @@
 {
-  "name": "node-authentication",
+  "name": "user-lesson-quiz",
   "main": "server.js",
   "dependencies": {
     "async": "^2.4.1",
