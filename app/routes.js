@@ -1,8 +1,8 @@
 /*
-* created by : zulekha herlekar
-* date : 28/05/2017
-* description : All respective routs related with app
-**/
+ * created by : zulekha herlekar
+ * date : 28/05/2017
+ * description : All respective routs related with app
+ **/
 // grab the models and respective libraries
 var User = require('../app/models/users');
 var Lesson = require('../app/models/lessons');
@@ -28,6 +28,19 @@ module.exports = function(app) {
         }]
       }
     }, {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "user"
+      }
+    }, {
+      "$project": {
+        "user": "$user.email",
+        "title": "$title",
+        "scheduled_at": "$scheduled_at"
+      }
+    }, {
       $group: {
         _id: "$user",
         num_lessons: {
@@ -40,8 +53,15 @@ module.exports = function(app) {
           }
         }
       }
+    }, {
+      "$project": {
+        "_id": 0,
+        "user": "$_id",
+        "num_lessons": 1,
+        "lessons": 1
+      }
     }];
-    
+
     //aggregate query to get quizzes groupby each user
 
     var quizQuery = [{
@@ -57,8 +77,15 @@ module.exports = function(app) {
         }]
       }
     }, {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "user"
+      }
+    }, {
       '$project': {
-        'user': 1,
+        "user": "$user.email",
         'question': {
           '$sum': {
             '$map': {
@@ -84,6 +111,14 @@ module.exports = function(app) {
           '$push': '$scheduled_at'
         }
       }
+    }, {
+      "$project": {
+        "_id": 0,
+        "user": "$_id",
+        "totalScore": "$totalScore",
+        "title": 1,
+        "scheduled_at": 1
+      }
     }]
     var selectedSchema, query;
 
@@ -106,12 +141,7 @@ module.exports = function(app) {
           if (err) {
             throw err;
           } else {
-            User.populate(result, {
-              path: '_id',
-              select: 'name email'
-            }, function(err, populatedTransactions) {
-              callback(null, populatedTransactions);
-            });
+            callback(null, result);
           }
         })
       }
@@ -129,16 +159,11 @@ module.exports = function(app) {
           if (err) {
             throw err;
           } else {
-            User.populate(result, {
-              path: '_id',
-              select: 'name email'
-            }, function(err, populatedTransactions) {
-              callback(null, populatedTransactions);
-            });
+            callback(null, result);
           }
         })
       }
-      
+
       //get lesson/quiz which are not started as of today
       function getNotStarted(callback) {
         query[0] = {
@@ -152,12 +177,7 @@ module.exports = function(app) {
           if (err) {
             throw err;
           } else {
-            User.populate(result, {
-              path: '_id',
-              select: 'name email'
-            }, function(err, populatedTransactions) {
-              callback(null, populatedTransactions);
-            });
+            callback(null, result);
           }
         })
       }
